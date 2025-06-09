@@ -887,3 +887,202 @@
   font-size: 16px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
 }
+
+.medical-report-uploader-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #d1d5db; /* gray-300 */
+  box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05);
+  font-size: 0.875rem; /* text-sm */
+  line-height: 1.25rem; /* leading-4 */
+  font-weight: 500;
+  border-radius: 0.375rem; /* rounded-md */
+  color: #374151; /* text-gray-700 */
+  background-color: #fff;
+  transition: background 0.2s;
+}
+.medical-report-uploader-btn:hover {
+  background-color: #f9fafb; /* bg-gray-50 */
+}
+.medical-report-uploader-btn:focus {
+  outline: 2px solid #3b82f6; /* ring-blue-500 */
+  outline-offset: 2px;
+}
+.medical-report-uploader-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.medical-report-uploader-icon {
+  margin-left: -0.25rem;
+  margin-right: 0.5rem;
+  height: 1rem;
+  width: 1rem;
+  color: #6b7280; /* text-gray-500 */
+}
+.medical-report-uploader-info {
+  margin-top: 0.25rem;
+  font-size: 0.75rem;
+  color: #6b7280; /* text-gray-500 */
+}
+.medical-report-uploader-error {
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  color: #dc2626; /* text-red-600 */
+}
+
+/* Medical Report File Viewer Styles */
+.medical-report-viewer {
+  width: 100%;
+}
+
+.medical-report-loading {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.medical-report-error {
+  margin-bottom: 0.75rem;
+  font-size: 0.875rem;
+  color: #dc2626;
+}
+
+.medical-report-empty {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.medical-report-list {
+  margin-top: 0.5rem;
+}
+
+.medical-report-title {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+}
+
+.medical-report-list-container {
+  margin-top: 0.5rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.375rem;
+  overflow: hidden;
+}
+
+.medical-report-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.medical-report-item:hover {
+  background-color: #f9fafb;
+}
+
+.medical-report-item:last-child {
+  border-bottom: none;
+}
+
+.medical-report-item-left {
+  display: flex;
+  align-items: center;
+}
+
+.medical-report-icon {
+  height: 1.25rem;
+  width: 1.25rem;
+  color: #9ca3af;
+  margin-right: 0.5rem;
+}
+
+.medical-report-filename {
+  font-size: 0.875rem;
+}
+
+.medical-report-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.medical-report-view-btn {
+  color: #2563eb;
+  font-size: 0.875rem;
+}
+
+.medical-report-view-btn:hover {
+  color: #1d4ed8;
+}
+
+.medical-report-delete-btn {
+  color: #dc2626;
+  font-size: 0.875rem;
+}
+
+.medical-report-delete-btn:hover {
+  color: #b91c1c;
+}
+
+/* Modal Styles */
+.medical-report-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(75, 85, 99, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+.medical-report-modal {
+  background-color: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  max-width: 64rem;
+  width: 100%;
+  height: 90vh;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.medical-report-modal-header {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.medical-report-modal-title {
+  font-size: 1.125rem;
+  font-weight: 500;
+  color: #111827;
+}
+
+.medical-report-modal-close {
+  color: #9ca3af;
+}
+
+.medical-report-modal-close:hover {
+  color: #6b7280;
+}
+
+.medical-report-modal-content {
+  flex-grow: 1;
+  padding: 1rem;
+  overflow: auto;
+}
+
+.medical-report-pdf-viewer {
+  width: 100%;
+  height: 100%;
+  min-height: 75vh;
+}
+
+.medical-report-image-viewer {
+  max-width: 100%;
+  max-height: 75vh;
+  margin: 0 auto;
+}

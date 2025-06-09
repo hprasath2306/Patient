@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { Disease, MedicalReport } from "../types";
 import "./Dashboard.css";
+import MedicalReportFileUploader from "./MedicalReportFileUploader";
+import MedicalReportFileViewer from "./MedicalReportFileViewer";
 
 interface DiseaseFormProps {
   initialValues?: Disease;
@@ -298,9 +300,11 @@ const DiseaseForm = ({ initialValues, patientId, onSave, onCancel }: DiseaseForm
           {diseaseId ? (
             <div className="space-y-4">
               <div className="no-data-card">
-                <p className="no-data-text">
-                  Medical report uploader component will be implemented separately.
-                </p>
+                 <MedicalReportFileViewer diseaseId={diseaseId} className="mb-3" />
+                  <MedicalReportFileUploader
+                    diseaseId={diseaseId}
+                    onFileUploaded={handleFileUploaded}
+                  />
               </div>
             </div>
           ) : (

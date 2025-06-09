@@ -1,6 +1,10 @@
 import { useState, useEffect } from "react";
 import { Disease, MedicalHistory, Therapy, TherapyTools } from "../types";
 import "./Dashboard.css";
+import MedicalHistoryView from "./MedicalHistoryView";
+import MedicalHistoryForm from "./MedicalHistoryForm";
+import TherapyForm from "./TherapyForm";
+import TherapyView from "./TherapyView";
 
 interface DiseaseDetailsProps {
   id: number;
@@ -33,6 +37,7 @@ const DiseaseDetails = ({ id, onBack, onEdit }: DiseaseDetailsProps) => {
 
     fetchDisease();
   }, [id]);
+
 
   const handleEdit = () => {
     if (disease) {
@@ -77,6 +82,32 @@ const DiseaseDetails = ({ id, onBack, onEdit }: DiseaseDetailsProps) => {
     }
   };
 
+  const handleSaveMedicalHistory = async (medicalHistory: MedicalHistory) => {
+    try {
+      let savedMedicalHistory;
+
+      if (medicalHistory.id) {
+        savedMedicalHistory = await window.electron.ipcRenderer.invoke("update-medical-history", {
+          id: medicalHistory.id,
+          data: medicalHistory
+        });
+      } else {
+        savedMedicalHistory = await window.electron.ipcRenderer.invoke("create-medical-history", medicalHistory);
+      }
+
+      // Update the local disease state with the new medical history
+      setDisease(prev => prev ? {
+        ...prev,
+        medicalHistory: savedMedicalHistory
+      } : null);
+
+      setViewState("details");
+    } catch (err) {
+      console.error("Error saving medical history:", err);
+      setError("Failed to save medical history");
+    }
+  };
+
   if (loading) {
     return (
       <div className="loader-container">
@@ -108,36 +139,136 @@ const DiseaseDetails = ({ id, onBack, onEdit }: DiseaseDetailsProps) => {
   // The MedicalHistoryForm, TherapyForm, and TherapyView components will be implemented separately
   if (viewState === "medical-history-form") {
     return (
-      <div className="no-data-card">
-        <h2 className="no-data-title">Medical History Form</h2>
-        <p className="no-data-text">The medical history form component will be implemented separately.</p>
-        <button className="btn-primary" onClick={() => setViewState("details")}>
-          Back to Disease Details
-        </button>
-      </div>
+      <MedicalHistoryForm
+        diseaseId={id}
+        initialValues={disease?.medicalHistory}
+        onSave={handleSaveMedicalHistory}
+        onCancel={() => setViewState("details")}
+      />
     );
   }
+
+   const handleCancelTherapy = () => {
+    setSelectedTherapy(null);
+    setViewState("details");
+  };
+
+    const handleSaveTherapy = async (therapy: Therapy) => {
+    try {
+      let savedTherapy;
+
+      if (therapy.id) {
+        savedTherapy = await window.electron.ipcRenderer.invoke("update-therapy", {
+          id: therapy.id,
+          data: therapy
+        });
+      } else {
+        savedTherapy = await window.electron.ipcRenderer.invoke("create-therapy", therapy);
+      }
+
+      // Update the local disease state with the new therapy
+      setDisease(prev => {
+        if (!prev) return null;
+
+        // Check if we're updating an existing therapy or adding a new one
+        if (therapy.id) {
+          // Update existing therapy
+          const updatedTherapies = prev.therapies ?
+            prev.therapies.map(t => t.id === therapy.id ? savedTherapy : t) :
+            [savedTherapy];
+          return {
+            ...prev,
+            therapies: updatedTherapies
+          };
+        } else {
+          // Add new therapy
+          return {
+            ...prev,
+            therapies: prev.therapies ? [...prev.therapies, savedTherapy] : [savedTherapy]
+          };
+        }
+      });
+
+      setSelectedTherapy(null);
+      setViewState("details");
+    } catch (err) {
+      console.error("Error saving therapy:", err);
+      throw err;
+    }
+  };
 
   if (viewState === "therapy-form") {
-    return (
-      <div className="no-data-card">
-        <h2 className="no-data-title">Therapy Form</h2>
-        <p className="no-data-text">The therapy form component will be implemented separately.</p>
-        <button className="btn-primary" onClick={() => setViewState("details")}>
-          Back to Disease Details
-        </button>
-      </div>
+   return (
+      <TherapyForm
+        initialValues={selectedTherapy}
+        diseaseId={disease.id!}
+        onSave={handleSaveTherapy}
+        onCancel={handleCancelTherapy}
+      />
     );
   }
+    const handleEditFromTherapyView = () => {
+    setViewState("therapy-form");
+    };
+  const handleSaveTherapyTools = async (therapyTools: TherapyTools) => {
+    try {
+      let savedTherapyTools;
+
+      if (therapyTools.id) {
+        // Update existing therapy tools
+        savedTherapyTools = await window.electron.ipcRenderer.invoke("update-therapy-tools", {
+          id: therapyTools.id,
+          data: therapyTools
+        });
+      } else {
+        // Create new therapy tools
+        savedTherapyTools = await window.electron.ipcRenderer.invoke("create-therapy-tools", therapyTools);
+      }
+
+      // Update local state
+      setDisease(prev => {
+        if (!prev) return null;
+
+        // Find the therapy we're updating tools for
+        const updatedTherapies = prev.therapies?.map(t => {
+          if (t.id === therapyTools.therapyId) {
+            return {
+              ...t,
+              therapyTools: savedTherapyTools
+            };
+          }
+          return t;
+        });
+
+        return {
+          ...prev,
+          therapies: updatedTherapies
+        };
+      });
+
+      setViewState("therapy-view");
+    } catch (err) {
+      console.error("Error saving therapy tools:", err);
+      throw err;
+    }
+  };
 
   if (viewState === "therapy-view") {
-    return (
-      <div className="no-data-card">
-        <h2 className="no-data-title">Therapy View</h2>
-        <p className="no-data-text">The therapy view component will be implemented separately.</p>
-        <button className="btn-primary" onClick={() => setViewState("details")}>
-          Back to Disease Details
-        </button>
+     return (
+      <div>
+        <TherapyView
+          therapy={selectedTherapy}
+          onEdit={handleEditFromTherapyView}
+          onSaveTherapyTools={handleSaveTherapyTools}
+        />
+        <div className="mt-4">
+          <button
+            onClick={() => setViewState("details")}
+            className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition"
+          >
+            Back to Disease
+          </button>
+        </div>
       </div>
     );
   }
@@ -237,82 +368,12 @@ const DiseaseDetails = ({ id, onBack, onEdit }: DiseaseDetailsProps) => {
           ))}
         </div>
       </div>
+      <MedicalHistoryView
+        medicalHistory={disease.medicalHistory}
+        onEdit={handleEditMedicalHistory}
+      />
 
-      {/* Medical History Section */}
-      <div className="medical-history-card">
-        <div className="medical-history-header">
-          <h2 className="medical-history-title">Medical History</h2>
-          <button
-            onClick={handleEditMedicalHistory}
-            className="btn-primary"
-          >
-            {disease.medicalHistory ? "Edit" : "Add Medical History"}
-          </button>
-        </div>
 
-        {!disease.medicalHistory ? (
-          <p className="text-gray-500">No medical history recorded for this disease.</p>
-        ) : (
-          <div className="medical-history-grid">
-            {disease.medicalHistory.childhoodIllness && (
-              <div className="medical-history-item">
-                <span className="detail-label">Childhood Illness</span>
-                <p className="detail-value detail-multiline">{disease.medicalHistory.childhoodIllness}</p>
-              </div>
-            )}
-
-            {disease.medicalHistory.psychiatricIllness && (
-              <div className="medical-history-item">
-                <span className="detail-label">Psychiatric Illness</span>
-                <p className="detail-value detail-multiline">{disease.medicalHistory.psychiatricIllness}</p>
-              </div>
-            )}
-
-            {disease.medicalHistory.occupationalInfluences && (
-              <div className="medical-history-item">
-                <span className="detail-label">Occupational Influences</span>
-                <p className="detail-value detail-multiline">{disease.medicalHistory.occupationalInfluences}</p>
-              </div>
-            )}
-
-            {disease.medicalHistory.operationsOrSurgeries && (
-              <div className="medical-history-item">
-                <span className="detail-label">Operations or Surgeries</span>
-                <p className="detail-value detail-multiline">{disease.medicalHistory.operationsOrSurgeries}</p>
-              </div>
-            )}
-
-            <div className="hereditary-indicator">
-              <div className={`hereditary-dot ${disease.medicalHistory.hereditary ? "yes" : "no"}`}>
-                {disease.medicalHistory.hereditary && (
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-3 w-3 text-white"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                )}
-              </div>
-              <span className="detail-value">
-                {disease.medicalHistory.hereditary ? "Hereditary" : "Not Hereditary"}
-              </span>
-            </div>
-
-            {disease.medicalHistory.medicalReports && (
-              <div className="medical-history-item">
-                <span className="detail-label">Medical Reports Notes</span>
-                <p className="detail-value detail-multiline">{disease.medicalHistory.medicalReports}</p>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
 
       {/* Therapies Section */}
       <div className="therapy-card">

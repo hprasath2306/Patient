@@ -1,5 +1,6 @@
 import { MedicalHistory } from "../types";
 import "./Dashboard.css";
+import MedicalReportFileViewer from "./MedicalReportFileViewer";
 
 interface MedicalHistoryViewProps {
   medicalHistory: MedicalHistory | null | undefined;
@@ -98,9 +99,9 @@ const MedicalHistoryView = ({ medicalHistory, onEdit }: MedicalHistoryViewProps)
           <div className="mt-4">
             <h3 className="detail-label">Medical Report Files</h3>
             <div className="no-data-card">
-              <p className="no-data-text">
-                Medical report file viewer component will be implemented separately.
-              </p>
+
+              <MedicalReportFileViewer medicalHistoryId={medicalHistory.id} />
+
             </div>
           </div>
         )}

@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { MedicalHistory, MedicalReport } from "../types";
 import "./Dashboard.css";
+import MedicalReportFileUploader from "./MedicalReportFileUploader";
+import MedicalReportFileViewer from "./MedicalReportFileViewer";
 
 interface MedicalHistoryFormProps {
   initialValues?: MedicalHistory | null;
@@ -167,17 +169,21 @@ const MedicalHistoryForm = ({ initialValues, diseaseId, onSave, onCancel }: Medi
 
         <div className="form-section">
           <h3 className="section-title">Medical Report Files</h3>
-          {historyId ? (
-            <div className="no-data-card">
-              <p className="no-data-text">
-                Medical report file viewer component will be implemented separately.
+         {historyId ? (
+              <MedicalReportFileViewer medicalHistoryId={historyId} className="mb-3" />
+              // <div></div>
+            ) : (
+              <p className="text-sm text-gray-500 mb-3">
+                Save this form to enable file uploads
               </p>
-            </div>
-          ) : (
-            <p className="text-sm text-gray-500 mb-3">
-              Save this form to enable file uploads
-            </p>
-          )}
+            )}
+
+            {historyId && (
+              <MedicalReportFileUploader
+                medicalHistoryId={historyId}
+                onFileUploaded={handleFileUploaded}
+              />
+            )}
         </div>
 
         <div className="form-actions">

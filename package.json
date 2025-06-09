@@ -25,6 +25,7 @@
     "@electron-toolkit/utils": "^4.0.0",
     "better-sqlite3": "^11.10.0",
     "electron-updater": "^6.3.9",
+    "path-browserify": "^1.0.1",
     "react-router-dom": "^7.6.1",
     "recharts": "^2.15.3"
   },

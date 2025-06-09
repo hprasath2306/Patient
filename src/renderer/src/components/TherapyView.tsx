@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Therapy, TherapyTools } from "../types";
 import "./Dashboard.css";
+import TherapyToolsForm from "./TherapyToolsForm";
 
 interface TherapyViewProps {
   therapy: Therapy | null | undefined;
@@ -35,17 +36,27 @@ const TherapyView = ({ therapy, onEdit, onSaveTherapyTools }: TherapyViewProps) 
   const handleEditTherapyTools = () => {
     setViewState("edit-tools");
   };
+   const handleSaveTherapyTools = async (therapyTools: TherapyTools) => {
+    if (onSaveTherapyTools) {
+      await onSaveTherapyTools(therapyTools);
+      setViewState("view");
+    }
+  };
+
+  const handleCancelEditTools = () => {
+    setViewState("view");
+  };
+
 
   // The TherapyToolsForm will be implemented separately
   if (viewState === "edit-tools") {
-    return (
-      <div className="no-data-card">
-        <h2 className="no-data-title">Therapy Tools Form</h2>
-        <p className="no-data-text">The therapy tools form component will be implemented separately.</p>
-        <button className="btn-primary" onClick={() => setViewState("view")}>
-          Back to Therapy View
-        </button>
-      </div>
+  return (
+      <TherapyToolsForm
+        initialValues={therapy.therapyTools}
+        therapyId={therapy.id!}
+        onSave={handleSaveTherapyTools}
+        onCancel={handleCancelEditTools}
+      />
     );
   }
 
