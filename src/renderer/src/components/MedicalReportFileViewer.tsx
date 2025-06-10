@@ -24,10 +24,9 @@ const MedicalReportFileViewer: React.FC<MedicalReportFileViewerProps> = ({
   } | null>(null);
   const [showPreview, setShowPreview] = useState(false);
 
-
   // Helper function to get filename from path
   const getFilename = (filePath: string) => {
-    return filePath.split(/[\\/]/).pop() || filePath;
+    return path.basename(filePath);
   };
 
   useEffect(() => {
@@ -58,12 +57,15 @@ const MedicalReportFileViewer: React.FC<MedicalReportFileViewerProps> = ({
 
   const handleViewReport = async (report: MedicalReport) => {
     try {
+      setLoading(true);
       const fileData = await window.electron.ipcRenderer.invoke('open-medical-report', report.filePath);
       setSelectedReport(fileData);
       setShowPreview(true);
     } catch (err: any) {
       setError(err.message || 'Error loading file');
       console.error('Error opening file:', err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -73,12 +75,14 @@ const MedicalReportFileViewer: React.FC<MedicalReportFileViewerProps> = ({
     }
 
     try {
+      setLoading(true);
       await window.electron.ipcRenderer.invoke('delete-medical-report', reportId);
-      // Refresh the list
-      fetchReports();
+      await fetchReports(); // Refresh the list
     } catch (err: any) {
       setError(err.message || 'Error deleting report');
       console.error('Error deleting report:', err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -87,7 +91,7 @@ const MedicalReportFileViewer: React.FC<MedicalReportFileViewerProps> = ({
     setSelectedReport(null);
   };
 
-  if (loading) {
+  if (loading && !showPreview) {
     return <div className="medical-report-loading">Loading medical reports...</div>;
   }
 
@@ -107,7 +111,7 @@ const MedicalReportFileViewer: React.FC<MedicalReportFileViewerProps> = ({
                   <svg className="medical-report-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
-                  <span className="medical-report-filename">{report.fileName || getFilename(report.filePath)}</span>
+                  <span className="medical-report-filename">{getFilename(report.filePath)}</span>
                 </div>
                 <div className="medical-report-actions">
                   <button
@@ -131,31 +135,36 @@ const MedicalReportFileViewer: React.FC<MedicalReportFileViewerProps> = ({
 
       {/* File Preview Modal */}
       {showPreview && selectedReport && (
-        <div className="medical-report-modal-overlay">
-          <div className="medical-report-modal">
+        <div className="medical-report-modal-overlay" onClick={closePreview}>
+          <div className="medical-report-modal" onClick={e => e.stopPropagation()}>
             <div className="medical-report-modal-header">
               <h3 className="medical-report-modal-title">{selectedReport.fileName}</h3>
               <button onClick={closePreview} className="medical-report-modal-close">
-                <svg className="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
-            <div className="medical-report-modal-content">
-              {selectedReport.fileType.match(/\.(pdf)$/i) ? (
-                <iframe
-                  src={`data:application/pdf;base64,${selectedReport.data}`}
-                  className="medical-report-pdf-viewer"
-                  title={selectedReport.fileName}
-                />
-              ) : (
-                <img
-                  src={`data:image/${selectedReport.fileType.replace('.', '')};base64,${selectedReport.data}`}
-                  alt={selectedReport.fileName}
-                  className="medical-report-image-viewer"
-                />
-              )}
-            </div>
+            {selectedReport && (
+              <div className="medical-report-modal-content">
+                {selectedReport.fileType.toLowerCase().includes("pdf") ? (
+                  <iframe
+                    src={`data:application/pdf;base64,${selectedReport.data}`}
+                    title={selectedReport.fileName}
+                    width="100%"
+                    height="600px"
+                    style={{ border: "none" }}
+                  />
+                ) : (
+                  <img
+                    src={`data:image/${selectedReport.fileType.replace('.', '').toLowerCase()};base64,${selectedReport.data}`}
+                    alt={selectedReport.fileName}
+                    className="medical-report-image-viewer"
+                  />
+                )}
+              </div>
+            )}
+
           </div>
         </div>
       )}
